@@ -2,9 +2,9 @@
 
 ## Team Members
 
-Olena Khrystenko :: ovkncp@umsystem.edu
-Joe Moon :: jmn5y@umsystem.edu
-Jack Zhang :: zz9g4@umsystem.edu
+Olena Khrystenko :: ovkncp@umsystem.edu<br>
+Joe Moon :: jmn5y@umsystem.edu<br>
+Jack Zhang :: zz9g4@umsystem.edu<br>
 
 ## Instructions
 
