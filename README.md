@@ -22,7 +22,13 @@ Inititate the servers in the following order with the following commands where #
 
 Note: you can add as many worker servers as you'd like. <br>
 
-Alternatively, a bash script has been included that will kill any existing python3 processes and initiate the above list with three worker servers. To run the bash script, execute the following command from the program directory: <b>./pa1</b>
+### Testing Script
+
+Alternatively, a bash script has been included that will kill any existing python3 processes and initiate the above list with three worker servers. To run the bash script, execute the following command from the program directory: <br>
+<ul>
+    <li>From a Linux/UNIX terminal, type: <b>./pa1</b></li>
+    <li>From a Windows terminal, type: <b>bash pa1</li>
+ </ul>
 
 ### ADDITIONAL FEATURE 1: Registering a Worker
 
