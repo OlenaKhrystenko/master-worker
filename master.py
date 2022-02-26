@@ -1,107 +1,196 @@
-import datetime
+from re import A
 from xmlrpc.server import SimpleXMLRPCServer
 import xmlrpc.client
 import sys
 
-w1 = "abcdefghijklm"
-w2 = "nopqrstuvwxyz"
+# TESTING FEATURE (True = on / False = off)
+# Displays data on selected worker and load
+show_details = True
 
-workers = {
-    'worker-1': xmlrpc.client.ServerProxy("http://localhost:23001/"),
-    'worker-2': xmlrpc.client.ServerProxy("http://localhost:23002/")
-}
+# Available Workers
+# Key:Value => #####: xmlrpc.client.ServerProxy("http://localhost:#####/")
+# ##### = port number of registered worker
+workers = {}
+
+# Tracking for balancing load among workers
+# Key:Value => port_number : load
+load_tracker = {}
+
+
+def details(active_worker):
+    print(f'\tWorker on port {active_worker} selected for task')
+    print(
+        f'\tLoad Count for Worker on port {active_worker}: {load_tracker[active_worker]}')
+
+
+def registerWorker(worker_port):
+    try:
+        int(worker_port)    # integer check, otherwise raise exception
+        if worker_port in workers:
+            return False    # Port number already in use
+        else:
+            workers.update(
+                {worker_port: xmlrpc.client.ServerProxy(f"http://localhost:{worker_port}")})
+            load_tracker.update({worker_port: 0})
+            print(f'**** REGISTERED WITH MASTER ON PORT {worker_port} ****')
+            return True
+    except ValueError:
+        print(f'Failed to recognize {worker_port} as a valid port number')
 
 
 def getbyname(name):
-    # TODO
-    nameList = []
-    print("MASTER: name", name)
+    # print("MASTER: name", name)   # TEST
+    nameList = []       # array of returned results
+
+    # Send query to Worker and record reply
     try:
-      if name[0] in w1:
-        s = workers['worker-1']
-        nameList.append(s.getbyname(name))
+        active_worker = lowestLoad()
+        s = workers.get(active_worker)
+        result = s.getbyname(name)
+        nameList.append(result.get('result'))
+
+        # Update tracker data
+        load_tracker[active_worker] = result['load']
+
+        if show_details:
+            details(active_worker)
+
         return {
-          'error':True,
-          'result': nameList
-        }
-      elif name[0] in w2:
-        s = workers['worker-2']
-        nameList.append(s.getbyname(name))
-        return {
-          'error':True,
-          'result': nameList
-        }
-      else:
-        return {
-          'error': False,
-          'result': []
+            'error': False,
+            'result': nameList
         }
     except TypeError:
-      print(f"Incorrect argument: {name}. Must be string.")
+        return {
+            'error': True,
+            'error_message': f'ERROR: Incorrect argument: {name}.  Must be a string.'
+        }
+
+  # TEST: KEPT FOR COMPARISON.  REMOVE WHEN READY
+    # try:
+    #     if name[0] in w1:
+    #         s = workers.get('worker-1')
+    #     elif name[0] in w2:
+    #         s = workers.get('worker-2')
+    #     else:
+    # return {
+    #     'error': True,
+    #     'error_message': 'Failed to search by name'
+    # }
+
+    # result = s.getbyname(name)
+    # nameList.append(result)
+    # load_tracker.append(result['load'])
+    # return {
+    #     'error': False,
+    #     # 'result': nameList
+    #     'result': result
+    # }
+    # except TypeError:
+    #     print(f"Incorrect argument: {name}. Must be string.")
 
 
 def getbylocation(location):
-    # TODO
-    print("MASTER: location", location)
-    locationList = []
+    # print("MASTER: location", location)   # TEST
+    locationList = []   # array of returned results
+
     try:
-      if len(location) > 0:
-        s1 = workers['worker-1']
-        locationList.append(s1.getbylocation(location))
-        s2 = workers['worker-2']
-        locationList.append(s2.getbylocation(location))
-        return {
-          'error': True,
-          'result': locationList
-        }
-      else:
-        return {
-          'error': False,
-          'result': []
-        }
+        if len(location) > 0:
+            active_worker = lowestLoad()
+
+            s = workers.get(active_worker)
+            result = s.getbylocation(location)
+            locationList.append(result.get('result'))
+
+            # Update tracker data
+            load_tracker[active_worker] = result['load']
+
+            if show_details:
+                details(active_worker)
+
+            return {
+                'error': False,
+                'result': locationList
+            }
     except TypeError:
-      print(f"The argument must be of a type string.")
+        return {
+            'error': True,
+            'error_message': 'The argument must be of a type string.'
+        }
+
+# TEST: KEPT FOR COMPARISON.  REMOVE WHEN READY
+    # try:
+    #     if len(location) > 0:
+    #         s1 = workers['worker-1']
+    #         locationList.append(s1.getbylocation(location))
+    #         s2 = workers['worker-2']
+    #         locationList.append(s2.getbylocation(location))
+    #         return {
+    #             'error': False,
+    #             'result': locationList
+    #         }
+    #     else:
+    #         return {
+    #             'error': True,
+    #             'result': []
+    #         }
+    # except TypeError:
+    #     print(f"The argument must be of a type string.")
 
 
 def getbyyear(location, year):
-    # TODO
-    print("MASTER: year")
+    # print("MASTER: year")   # TEST
     lyList = []
     try:
-      if len(location) > 0:
-        s1 = workers['worker-1']
-        lyList.append(s1.getbyyear(location, year))
-        s2 = workers['worker-2']
-        lyList.append(s2.getbyyear(location, year))
-        return {
-          'error': True,
-          'result': lyList
-        }
-      else:
+        if len(location) > 0:
+            active_worker = lowestLoad()
+
+            s = workers.get(active_worker)
+            result = s.getbyyear(location, year)
+            lyList.append(result.get('result'))
+
+        # Update tracker data
+        load_tracker[active_worker] = result['load']
+
+        if show_details:
+            details(active_worker)
+
         return {
             'error': False,
-            'result': []
+            'result': lyList
         }
     except TypeError:
-      print(f"Check types of the arguments.")
-      print(f"They must be string and int respectively.")
+        return {
+            'error': True,
+            'error_message': 'The arguments must be a string and int respectively.'
+        }
 
-try:
-  port = int(sys.argv[1])
-except ValueError:
-  print("Port value must be of a type int.")
-  sys.exit(0)
 
-server = SimpleXMLRPCServer(("localhost", port), allow_none = True)
-print(f" MASTER: Listening on port {port}...")
+# Searches the 'workers' dictionary for the worker with the lowest load
+def lowestLoad():
+    return min(load_tracker, key=load_tracker.get)
 
-server.register_function(getbyname, "getbyname")
-server.register_function(getbylocation, "getbylocation")
-server.register_function(getbyyear, "getbyyear")
 
-#server.serve_forever()
-try:
-    print('Press Ctrl+C to exit')
-    server.serve_forever()
-except KeyboardInterrupt:
-    print('Exiting...')
+def main():
+    try:
+        port = int(sys.argv[1])
+    except ValueError:
+        print("Port value must be of a type int.")
+        sys.exit(0)
+
+    server = SimpleXMLRPCServer(("localhost", port), allow_none=True)
+    print(f"MASTER: Listening on port {port}...")
+
+    server.register_function(registerWorker, "registerWorker")
+    server.register_function(getbyname, "getbyname")
+    server.register_function(getbylocation, "getbylocation")
+    server.register_function(getbyyear, "getbyyear")
+
+    # server.serve_forever()
+    try:
+        print('\tProcess running.  Ctrl+C to exit.')
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print('Exiting...')
+
+
+main()

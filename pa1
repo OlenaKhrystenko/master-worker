@@ -1,0 +1,18 @@
+#!/bin/bash
+
+pkill python3
+python3 master.py 23000 &
+sleep 0.3 
+python3 worker.py 23001 23000 &
+sleep 0.3
+python3 worker.py 23002 23000 &
+sleep 0.3 
+python3 worker.py 23003 23000 &
+sleep 0.3 
+
+echo ""
+echo "------------------------------------------------------"
+echo ""
+
+python3 client.py 23000
+
