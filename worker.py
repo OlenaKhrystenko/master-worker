@@ -3,17 +3,18 @@ import xmlrpc.client
 import sys
 import json
 
-# Registered JSON files
-files = [
-    'data-am.json',
-    'data-nz.json'
-]
 
 # Storage of JSON data
 data_table = {}
 
 # Counter for balancing work load
 load_counter = 0        # increments on each call from master
+
+# Registered JSON files
+files = [
+    'data-am.json',
+    'data-nz.json'
+]
 
 
 def load_file(index):
@@ -125,9 +126,9 @@ def main():
     # Register Worker with Master
     with xmlrpc.client.ServerProxy(f'http://localhost:{sys.argv[2]}/') as register:
         if register.registerWorker(port):
-            print('Registered with the master.  Ready to take on workload.')
+            print('\tRegistered with the master.  Ready to take on workload.')
         else:
-            print("Failed to register worker with the master.")
+            print("\tFailed to register worker with the master.")
 
     # Register RPC functions
     server.register_function(getbyname, "getbyname")

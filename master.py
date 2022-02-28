@@ -37,7 +37,7 @@ def registerWorker(worker_port):
             workers.update(
                 {worker_port: xmlrpc.client.ServerProxy(f"http://localhost:{worker_port}")})
             load_tracker.update({worker_port: 0})
-            print(f'**** REGISTERED WITH MASTER ON PORT {worker_port} ****')
+            print(f'\tRegistering worker on port {worker_port} with MASTER...')
             return True
     except ValueError:
         print(f'Failed to recognize {worker_port} as a valid port number')

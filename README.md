@@ -8,16 +8,16 @@ Jack Zhang :: zz9g4@umsystem.edu<br>
 
 ## Instructions
 
-This RPC program requires a client, a master server, and at least one worker server. In order to function, the master server must be brought online first as worker servers will register with the master server as they come online.
+This RPC program requires a client, a master server, and at least one worker server. In order to function, <b><u>the master server must be brought online first</u></b> as worker servers will register with the master server when they come online.
 
-Inititate the servers in the following order with the following commands where ##### is a port number:
+Inititate the servers in the following order with the following commands:
 
 <ol>
-    <li>python3 master.py [master port number] &</li>
-    <li>python3 worker.py ##### [master port number] &</li>
-    <li>python3 worker.py ##### [master port number] &</li>
-    <li>python3 worker.py ##### [master port number] &</li>
-    <li>python3 client.py [master port number]</li>
+    <li>python3 master.py [master port] &</li>
+    <li>python3 worker.py [worker-1 port] [master port] &</li>
+    <li>python3 worker.py [worker-2 port] [master port] &</li>
+    <li>python3 worker.py [worker-3 port] [master port] &</li>
+    <li>python3 client.py [master port]</li>
 </ol>
 
 Note: you can add as many worker servers as you'd like. <br>
@@ -43,3 +43,9 @@ Worker servers are no longer hard coded into the program and will be dynamically
 ### ADDITIONAL FEATURE 2: Load Balancing
 
 The master server will assign a worker to execute a function based on its load factor (lower loads will go next). As such, workers are no longer assigned a JSON file to search upon creation. Instead, they are assigned a JSON file based on the input and that assignment may change with each function call.
+
+### ADDITIONAL FEATURE 3: Rerouting Failed Workers
+
+When a worker fails after registering with the master, the connection error resulting from a function call will be captured and initiate the "removeWorker" functio that will remove that worker from the master's worker list (that worker's load data will be removed as well).<br>
+If that worker comes back online, it will be reregistered with a load count of zero.<br>
+A worker failure was simulated by killing that process.
