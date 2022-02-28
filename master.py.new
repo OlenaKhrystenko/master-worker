@@ -119,11 +119,18 @@ def getbylocation(location):
                 'result': locationList
             }
     #except TypeError:
-    except:
+    #    return {
+    #        'error': True,
+    #        'error_message': 'The argument must be of a type string.'
+    #    }
+    except IOError:
         return {
             'error': True,
-            'error_message': 'query location failed case of some execptions.'
+            'error_message': (f'worker {active_worker} unavailable.')
         }
+
+
+	
 
 # TEST: KEPT FOR COMPARISON.  REMOVE WHEN READY
     # try:
@@ -167,11 +174,16 @@ def getbyyear(location, year):
             'result': lyList
         }
     #except TypeError:
-    except:
+    #    return {
+    #        'error': True,
+    #        'error_message': 'The argument must be of a type string.'
+    #    }
+    except IOError:
         return {
             'error': True,
-            'error_message': 'query year failed cause of some execeptions'
+            'error_message': (f'worker {active_worker} unavailable.')
         }
+
 
 
 # Searches the 'workers' dictionary for the worker with the lowest load
