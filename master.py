@@ -3,7 +3,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 import xmlrpc.client
 import sys
 
-# TESTING FEATURE (True = on / False = off)
+# DIAGNOSTIC FEATURE (True = on / False = off)
 # Displays data on selected worker and load
 show_details = True
 
@@ -17,12 +17,17 @@ workers = {}
 load_tracker = {}
 
 
+# Diagnostic method displaying various states of the program
 def details(active_worker):
-    print(f'\tWorker on port {active_worker} selected for task')
+    print(f'\t****************** DETAILS ***********************')
+    print(f'\t* Worker on port {active_worker} selected for task')
     print(
-        f'\tLoad Count for Worker on port {active_worker}: {load_tracker[active_worker]}')
+        f'\t* Load Count for Worker on port {active_worker}: {load_tracker[active_worker]}')
+    print(f'\t* LOAD TRACKER => {load_tracker}')
+    print(f'\t**************************************************')
 
 
+# Adds a worker to a list of available workers able to receive tasks
 def registerWorker(worker_port):
     try:
         int(worker_port)    # integer check, otherwise raise exception
@@ -38,8 +43,15 @@ def registerWorker(worker_port):
         print(f'Failed to recognize {worker_port} as a valid port number')
 
 
+# Removes a worker upon a lost connection
+def removeWorker(worker_port):
+    print(f"{worker_port} failed to connect.")
+    removed_worker = workers.pop(worker_port)
+    load_tracker.pop(worker_port)
+    print(f'Removed {removed_worker} from workers list.')
+
+
 def getbyname(name):
-    # print("MASTER: name", name)   # TEST
     nameList = []       # array of returned results
 
     # Send query to Worker and record reply
@@ -64,33 +76,12 @@ def getbyname(name):
             'error': True,
             'error_message': f'ERROR: Incorrect argument: {name}.  Must be a string.'
         }
-
-  # TEST: KEPT FOR COMPARISON.  REMOVE WHEN READY
-    # try:
-    #     if name[0] in w1:
-    #         s = workers.get('worker-1')
-    #     elif name[0] in w2:
-    #         s = workers.get('worker-2')
-    #     else:
-    # return {
-    #     'error': True,
-    #     'error_message': 'Failed to search by name'
-    # }
-
-    # result = s.getbyname(name)
-    # nameList.append(result)
-    # load_tracker.append(result['load'])
-    # return {
-    #     'error': False,
-    #     # 'result': nameList
-    #     'result': result
-    # }
-    # except TypeError:
-    #     print(f"Incorrect argument: {name}. Must be string.")
+    except ConnectionRefusedError:
+        removeWorker(active_worker)
+        return getbyname(name)
 
 
 def getbylocation(location):
-    # print("MASTER: location", location)   # TEST
     locationList = []   # array of returned results
 
     try:
@@ -116,29 +107,12 @@ def getbylocation(location):
             'error': True,
             'error_message': 'The argument must be of a type string.'
         }
-
-# TEST: KEPT FOR COMPARISON.  REMOVE WHEN READY
-    # try:
-    #     if len(location) > 0:
-    #         s1 = workers['worker-1']
-    #         locationList.append(s1.getbylocation(location))
-    #         s2 = workers['worker-2']
-    #         locationList.append(s2.getbylocation(location))
-    #         return {
-    #             'error': False,
-    #             'result': locationList
-    #         }
-    #     else:
-    #         return {
-    #             'error': True,
-    #             'result': []
-    #         }
-    # except TypeError:
-    #     print(f"The argument must be of a type string.")
+    except ConnectionRefusedError:
+        removeWorker(active_worker)
+        return getbylocation(location)
 
 
 def getbyyear(location, year):
-    # print("MASTER: year")   # TEST
     lyList = []
     try:
         if len(location) > 0:
@@ -163,6 +137,9 @@ def getbyyear(location, year):
             'error': True,
             'error_message': 'The arguments must be a string and int respectively.'
         }
+    except ConnectionRefusedError:
+        removeWorker(active_worker)
+        return getbyyear(location, year)
 
 
 # Searches the 'workers' dictionary for the worker with the lowest load
@@ -185,7 +162,6 @@ def main():
     server.register_function(getbylocation, "getbylocation")
     server.register_function(getbyyear, "getbyyear")
 
-    # server.serve_forever()
     try:
         print('\tProcess running.  Ctrl+C to exit.')
         server.serve_forever()

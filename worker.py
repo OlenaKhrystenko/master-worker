@@ -37,7 +37,6 @@ def load_data(file):
 def getbyname(name):
     global load_counter
     load_counter += 1
-    # print("Worker: getbyname")  # TEST
     data_table = load_file(name)
 
     if name in data_table:
@@ -57,7 +56,6 @@ def getbylocation(location):
     global load_counter
     load_counter += 1
 
-    # print("Worker: getbylocation", location, "   ", type(location))   # TEST
     locList = []
 
     # Search by location through each listed file
@@ -83,7 +81,6 @@ def getbylocation(location):
 
 
 def getbyyear(location, year):
-    # print("Worker: getbyyear")    # TEST
     global load_counter
     load_counter += 1
     locYearList = []
